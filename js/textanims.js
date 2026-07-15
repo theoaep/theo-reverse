@@ -6,30 +6,30 @@
   const TR = window.TR;
 
   const IN_ANIMS = [
-    { key: "fadeIn",      ico: "🌤️", lab: "Fade In" },
-    { key: "popIn",       ico: "💥", lab: "Pop In" },
-    { key: "slideUpIn",   ico: "⬆️", lab: "Slide Up" },
-    { key: "slideDownIn", ico: "⬇️", lab: "Slide Down" },
-    { key: "blurIn",      ico: "🌫️", lab: "Blur In" },
-    { key: "typeIn",      ico: "⌨️", lab: "Typewriter" },
-    { key: "trackIn",     ico: "↔️", lab: "Tracking In" }
+    { key: "fadeIn",      lab: "Fade In" },
+    { key: "popIn",       lab: "Pop In" },
+    { key: "slideUpIn",   lab: "Slide Up" },
+    { key: "slideDownIn", lab: "Slide Down" },
+    { key: "blurIn",      lab: "Blur In" },
+    { key: "typeIn",      lab: "Typewriter" },
+    { key: "trackIn",     lab: "Tracking In" }
   ];
   const OUT_ANIMS = [
-    { key: "fadeOut",      ico: "🌙", lab: "Fade Out" },
-    { key: "popOut",       ico: "💨", lab: "Pop Out" },
-    { key: "slideUpOut",   ico: "⤴️", lab: "Slide Up Out" },
-    { key: "slideDownOut", ico: "⤵️", lab: "Slide Down Out" },
-    { key: "blurOut",      ico: "🌁", lab: "Blur Out" },
-    { key: "trackOut",     ico: "↕️", lab: "Tracking Out" }
+    { key: "fadeOut",      lab: "Fade Out" },
+    { key: "popOut",       lab: "Pop Out" },
+    { key: "slideUpOut",   lab: "Slide Up Out" },
+    { key: "slideDownOut", lab: "Slide Down Out" },
+    { key: "blurOut",      lab: "Blur Out" },
+    { key: "trackOut",     lab: "Tracking Out" }
   ];
 
   function buildGrid(el, anims, isIn) {
     anims.forEach((a) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "tool";
+      b.className = "tool tool-tanim";
       b.innerHTML =
-        '<span class="tool-ico">' + a.ico + '</span>' +
+        '<span class="tanim-preview"><span class="tanim-word tanim-' + a.key + '">Text</span></span>' +
         '<span class="tool-lab">' + a.lab + '</span>' +
         '<span class="tool-tag ' + (isIn ? "in" : "out") + '">' + (isIn ? "IN" : "OUT") + "</span>";
       b.addEventListener("click", () => {

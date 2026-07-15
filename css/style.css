@@ -263,6 +263,45 @@ body::after  { background: radial-gradient(circle, var(--g2), transparent 62%); 
 .preset-del:hover { color: #fff; background: rgba(255,255,255,0.08); }
 .pv-empty { text-align: center; padding: 16px 8px; }
 
+/* ── text-anim tiles: a live animated preview instead of an emoji ── */
+.tool-tanim { padding-top: 10px; }
+.tanim-preview { width: 100%; height: 28px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.tanim-word {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.5px; color: var(--fg); line-height: 1;
+  will-change: transform, opacity, filter;
+}
+/* IN previews: (hidden/offset) → animate in → hold → fade out to loop */
+@keyframes ta-fadeIn { 0%{opacity:0} 22%{opacity:1} 82%{opacity:1} 100%{opacity:0} }
+.tanim-fadeIn { animation: ta-fadeIn 2.4s ease infinite; }
+@keyframes ta-popIn { 0%{opacity:0;transform:scale(.3)} 22%{opacity:1;transform:scale(1)} 82%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1)} }
+.tanim-popIn { animation: ta-popIn 2.2s cubic-bezier(0.34,1.56,0.64,1) infinite; }
+@keyframes ta-slideUpIn { 0%{opacity:0;transform:translateY(11px)} 24%{opacity:1;transform:translateY(0)} 82%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(0)} }
+.tanim-slideUpIn { animation: ta-slideUpIn 2.5s cubic-bezier(0.23,1,0.32,1) infinite; }
+@keyframes ta-slideDownIn { 0%{opacity:0;transform:translateY(-11px)} 24%{opacity:1;transform:translateY(0)} 82%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(0)} }
+.tanim-slideDownIn { animation: ta-slideDownIn 2.5s cubic-bezier(0.23,1,0.32,1) infinite; }
+@keyframes ta-blurIn { 0%{opacity:0;filter:blur(5px)} 26%{opacity:1;filter:blur(0)} 82%{opacity:1;filter:blur(0)} 100%{opacity:0;filter:blur(0)} }
+.tanim-blurIn { animation: ta-blurIn 2.6s ease infinite; }
+@keyframes ta-trackIn { 0%{opacity:0;letter-spacing:7px} 26%{opacity:1;letter-spacing:0.5px} 82%{opacity:1;letter-spacing:0.5px} 100%{opacity:0;letter-spacing:0.5px} }
+.tanim-trackIn { animation: ta-trackIn 2.7s ease infinite; }
+.tanim-typeIn { display: inline-block; overflow: hidden; white-space: nowrap; border-right: 1.5px solid currentColor; width: 4ch;
+  animation: ta-type 2.8s steps(4,end) infinite, ta-caret 0.6s step-end infinite; }
+@keyframes ta-type { 0%{width:0} 42%{width:4ch} 84%{width:4ch} 100%{width:0} }
+@keyframes ta-caret { 50%{border-color:transparent} }
+/* OUT previews: quick appear → hold → animate out → loop */
+@keyframes ta-fadeOut { 0%{opacity:0} 15%{opacity:1} 55%{opacity:1} 88%,100%{opacity:0} }
+.tanim-fadeOut { animation: ta-fadeOut 2.4s ease infinite; }
+@keyframes ta-popOut { 0%{opacity:0;transform:scale(1)} 15%{opacity:1;transform:scale(1)} 55%{opacity:1;transform:scale(1)} 88%,100%{opacity:0;transform:scale(.3)} }
+.tanim-popOut { animation: ta-popOut 2.3s cubic-bezier(0.34,1.56,0.64,1) infinite; }
+@keyframes ta-slideUpOut { 0%{opacity:0;transform:translateY(0)} 15%{opacity:1;transform:translateY(0)} 55%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(-11px)} }
+.tanim-slideUpOut { animation: ta-slideUpOut 2.5s cubic-bezier(0.77,0,0.175,1) infinite; }
+@keyframes ta-slideDownOut { 0%{opacity:0;transform:translateY(0)} 15%{opacity:1;transform:translateY(0)} 55%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(11px)} }
+.tanim-slideDownOut { animation: ta-slideDownOut 2.5s cubic-bezier(0.77,0,0.175,1) infinite; }
+@keyframes ta-blurOut { 0%{opacity:0;filter:blur(0)} 15%{opacity:1;filter:blur(0)} 55%{opacity:1;filter:blur(0)} 88%,100%{opacity:0;filter:blur(5px)} }
+.tanim-blurOut { animation: ta-blurOut 2.6s ease infinite; }
+@keyframes ta-trackOut { 0%{opacity:0;letter-spacing:0.5px} 15%{opacity:1;letter-spacing:0.5px} 55%{opacity:1;letter-spacing:0.5px} 88%,100%{opacity:0;letter-spacing:7px} }
+.tanim-trackOut { animation: ta-trackOut 2.7s ease infinite; }
+
 /* ── cards ───────────────────────────────────────────── */
 .card {
   position: relative;
@@ -666,4 +705,7 @@ input:focus { outline: 0; border-color: var(--g2); box-shadow: 0 0 0 3px rgba(23
   .rfx { display: none; }
   .tool:hover, .tool:hover .tool-ico, .rail-btn.active, .hero:hover .hero-ico { transform: none; animation: none; }
   .node, .playbtn, .build, .ghost, .tappad, .chip, .tool, .rail-btn { transition-duration: 120ms; }
+  /* text-anim previews go static */
+  .tanim-word { animation: none !important; opacity: 1 !important; filter: none !important;
+    transform: none !important; letter-spacing: 0.5px !important; width: auto !important; border-right: 0 !important; }
 }
