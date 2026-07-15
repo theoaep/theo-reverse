@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>THEO REVERSE</title>
+  <link rel="stylesheet" href="./css/style.css"/>
+</head>
+<body>
+  <div class="aurora"></div>
+  <div class="noise"></div>
+
+  <!-- ── INTRO / GREETING ─────────────────────────────── -->
+  <div id="intro" class="intro">
+    <div id="nameStep" class="intro-step hidden">
+      <div class="intro-kicker">welcome to</div>
+      <div class="intro-logo">THEO<span>REVERSE</span></div>
+      <input id="nameInput" type="text" placeholder="type your name" maxlength="24"
+             autocomplete="off" spellcheck="false"/>
+      <div class="intro-hint">press enter</div>
+    </div>
+    <div id="greetStep" class="intro-step hidden">
+      <div id="greetText" class="greet"></div>
+      <div id="greetSub" class="greet-sub"></div>
+    </div>
+  </div>
+
+  <div id="shell">
+    <!-- ── SIDEBAR ─────────────────────────────────────── -->
+    <nav id="rail">
+      <button class="rail-btn" data-nav="ai"   title="AI assistant"><span class="rail-ico">✦</span><span class="rail-lab">AI</span></button>
+      <button class="rail-btn" data-nav="kit"  title="Toolkit"><span class="rail-ico">⚡</span><span class="rail-lab">Kit</span></button>
+      <button class="rail-btn" data-nav="graph" title="Graph editor"><span class="rail-ico">∿</span><span class="rail-lab">Graph</span></button>
+      <button class="rail-btn" data-nav="text" title="Text animations"><span class="rail-ico">T</span><span class="rail-lab">Text</span></button>
+    </nav>
+
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">THEO<span class="accent">REVERSE</span></div>
+        <div class="top-right">
+          <button id="who" class="chip" type="button" title="change name"></button>
+          <div class="status"><span id="dot" class="dot"></span><span id="hostinfo">connecting…</span></div>
+        </div>
+      </header>
+
+      <!-- ── update banner (shown only when a newer version is live) ── -->
+      <div id="updateBar" class="update-bar hidden">
+        <span class="update-ico">↑</span>
+        <span class="update-txt"><b id="updateVer"></b><span id="updateNote"></span></span>
+        <button id="updateGet" class="update-btn" type="button">Update</button>
+        <button id="updateX" class="update-x" type="button" title="dismiss">×</button>
+      </div>
+
+      <!-- ══ VIEW: AI ═══════════════════════════════════ -->
+      <section class="view" id="view-ai">
+        <div id="aiSetup" class="card ai-setup hidden">
+          <h2 class="ai-h">Editing Bot setup</h2>
+          <p id="keyHint" class="small muted">Paste your free Google AI Studio key (starts AIzaSy…). It stays on your machine.</p>
+          <div class="prov-row">
+            <input id="userKey" type="password" placeholder="AIzaSy…" spellcheck="false"/>
+            <button id="keySave" class="mini" type="button">Save</button>
+          </div>
+          <a href="#" id="keyLink" class="getkey">get a free key ↗</a>
+          <div id="keyStatus" class="prov-status"></div>
+        </div>
+
+        <div id="aiChat" class="ai-chat hidden">
+          <div class="ai-top-min">
+            <span id="aiModel" class="model-badge gem" title="which model is answering">Gemini</span>
+            <button id="aiKey" class="ghost" type="button">⚙ setup</button>
+          </div>
+          <div id="msgs" class="msgs"></div>
+          <div class="ai-inrow">
+            <textarea id="aiIn" rows="1" placeholder="Yo, ask anything…" spellcheck="false"></textarea>
+            <button id="aiSend" class="sendbtn" type="button" aria-label="Send">➤</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ VIEW: TOOLKIT ══════════════════════════════ -->
+      <section class="view" id="view-kit">
+        <button id="openFast" class="hero" type="button">
+          <span class="hero-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 7v10l-7-5 7-5Z"/><path d="M20 7v10l-7-5 7-5Z"/></svg></span>
+          <span class="hero-txt"><span class="hero-t">Fast Reverse</span><span class="hero-s">beat-tap reverse reel builder</span></span>
+          <span class="hero-go">›</span>
+        </button>
+
+        <button id="openMarker" class="hero hero-alt" type="button">
+          <span class="hero-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4M8 7.5v9M12 4.5v15M16 8v8M20 10.5v3"/></svg></span>
+          <span class="hero-txt"><span class="hero-t">Tap Beatmarker</span><span class="hero-s">tap along, drop beat markers on your comp</span></span>
+          <span class="hero-go">›</span>
+        </button>
+
+        <div class="card qr">
+          <h2 class="kit-h in-card">Quick Reverse</h2>
+          <label class="path">Your reverse .ffx (Twixtor + zooms baked in)
+            <input id="qrPath" type="text" value="C:\Edits\Reverse\in.ffx" spellcheck="false"/>
+          </label>
+          <button id="qrGo" class="build small-build" type="button">Apply to selected · auto-stretch</button>
+        </div>
+
+        <h2 class="kit-h">Tools</h2>
+        <div class="kitgrid" id="kitgrid"></div>
+      </section>
+
+      <!-- ══ VIEW: FAST REVERSE ═════════════════════════ -->
+      <section class="view" id="view-fast">
+        <div class="fast-head">
+          <button id="backKit" class="ghost" type="button">‹ toolkit</button>
+          <span class="fast-title">Fast Reverse</span>
+        </div>
+
+        <section id="drop" class="card track">
+          <canvas id="viz" class="viz"></canvas>
+          <div class="track-inner">
+            <div id="dzIdle" class="dz-idle">
+              <div class="dz-ico">♪</div>
+              <div class="dz-text">Drop your funk track <span class="muted">· or click</span></div>
+            </div>
+            <div id="dzLoaded" class="dz-loaded hidden">
+              <button id="playpause" class="playbtn" aria-label="Play">
+                <svg viewBox="0 0 24 24" class="i-play"><path d="M8 5v14l11-7z"/></svg>
+                <svg viewBox="0 0 24 24" class="i-pause"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+              </button>
+              <div class="track-main">
+                <div id="trackname" class="trackname">—</div>
+                <div id="scrub" class="scrub"><div id="scrubfill" class="scrub-fill"></div></div>
+              </div>
+              <div id="time" class="time">0:00</div>
+            </div>
+          </div>
+          <input id="file" type="file" accept="audio/*" hidden/>
+          <audio id="audio" preload="auto"></audio>
+        </section>
+
+        <section class="card beats">
+          <div class="beats-head">
+            <h2>Tap the beat</h2>
+            <button id="reset" class="ghost" type="button">reset</button>
+          </div>
+          <div id="nodes" class="nodes"></div>
+          <button id="tap" class="tappad" type="button">
+            <span class="tap-ring"></span>
+            <span id="tapnum" class="tapnum">1</span>
+            <span class="taphint">tap · or press space</span>
+          </button>
+          <div class="stats">
+            <div class="stat"><span id="bpm" class="stat-val">–</span><span class="stat-lab">bpm</span></div>
+            <div class="stat"><span id="marked" class="stat-val">0<i>/9</i></span><span class="stat-lab">marked</span></div>
+            <div class="stat"><span id="len" class="stat-val">–</span><span class="stat-lab">seconds</span></div>
+          </div>
+        </section>
+
+        <details class="card adv">
+          <summary>Settings</summary>
+          <div class="adv-body">
+            <div class="grid3">
+              <label>W<input id="w" type="number" value="1080"/></label>
+              <label>H<input id="h" type="number" value="1920"/></label>
+              <label>FPS<input id="fps" type="number" value="30"/></label>
+            </div>
+            <label class="path">Twixtor preset<input id="twixtor" type="text" value="C:\Edits\Reverse\TWIXTOR FPS.ffx"/></label>
+            <label class="path">Reverse in<input id="rin" type="text" value="C:\Edits\Reverse\in.ffx"/></label>
+            <label class="path">Reverse out<input id="rout" type="text" value="C:\Edits\Reverse\out.ffx"/></label>
+            <label class="check"><input id="applyTwixtor" type="checkbox" checked/> apply Twixtor</label>
+          </div>
+        </details>
+
+        <section class="card out">
+          <div class="out-row">
+            <span class="out-lab">Output</span>
+            <select id="target" class="out-sel"></select>
+            <button id="refresh" class="ghost" type="button" title="Rescan comps">⟲</button>
+          </div>
+        </section>
+
+        <button id="build" class="build" type="button" disabled>
+          <span class="build-label">Build Reel</span>
+          <span class="build-shine"></span>
+        </button>
+      </section>
+
+      <!-- ══ VIEW: TAP BEATMARKER ═══════════════════════ -->
+      <section class="view" id="view-marker">
+        <div class="fast-head">
+          <button id="mBack" class="ghost" type="button">‹ toolkit</button>
+          <span class="fast-title">Tap Beatmarker</span>
+        </div>
+
+        <section id="mDrop" class="card track">
+          <canvas id="mViz" class="viz"></canvas>
+          <div class="track-inner">
+            <div id="mIdle" class="dz-idle">
+              <div class="dz-ico">♪</div>
+              <div id="mIdleText" class="dz-text">loading comp audio… <span class="muted">or click to pick a file</span></div>
+            </div>
+            <div id="mLoaded" class="dz-loaded hidden">
+              <button id="mPlay" class="playbtn" aria-label="Play">
+                <svg viewBox="0 0 24 24" class="i-play"><path d="M8 5v14l11-7z"/></svg>
+                <svg viewBox="0 0 24 24" class="i-pause"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+              </button>
+              <div class="track-main">
+                <div id="mName" class="trackname">—</div>
+                <div id="mScrub" class="scrub"><div id="mScrubfill" class="scrub-fill"></div></div>
+              </div>
+              <div id="mTime" class="time">0:00</div>
+            </div>
+          </div>
+          <input id="mFile" type="file" accept="audio/*,video/*" hidden/>
+          <audio id="mAudio" preload="auto"></audio>
+        </section>
+
+        <section class="card beats">
+          <div class="beats-head">
+            <h2>Tap the beat</h2>
+            <div class="mk-actions">
+              <button id="mUndo" class="ghost" type="button">undo</button>
+              <button id="mClearTaps" class="ghost" type="button">clear</button>
+            </div>
+          </div>
+          <button id="mTap" class="tappad" type="button">
+            <span class="tap-ring"></span>
+            <span id="mTapnum" class="tapnum">0</span>
+            <span class="taphint">tap · or press space</span>
+          </button>
+          <div id="mList" class="mk-list"></div>
+          <div class="mk-opts">
+            <label class="check"><input id="mSnap" type="checkbox" checked/> snap to frame</label>
+            <label class="check"><input id="mClearExisting" type="checkbox"/> clear existing markers</label>
+          </div>
+        </section>
+
+        <button id="mDropMarkers" class="build" type="button" disabled>
+          <span class="build-label">Drop 0 markers</span>
+          <span class="build-shine"></span>
+        </button>
+      </section>
+
+      <!-- ══ VIEW: GRAPH EDITOR ═════════════════════════ -->
+      <section class="view" id="view-graph">
+        <div class="card">
+          <div class="beats-head">
+            <h2>Graph editor</h2>
+            <button id="gAI" class="ghost" type="button">✨ ask ai</button>
+          </div>
+          <div class="graph-wrap"><canvas id="gCanvas"></canvas></div>
+          <div id="gRead" class="graph-read">0.85 · 0.00 · 0.15 · 1.00</div>
+          <p class="hint">Select 2 keyframes on a property in AE, shape the curve, apply. Drag the two dots — pull Y past the box for overshoot.</p>
+        </div>
+
+        <div class="card">
+          <h2 class="kit-h in-card">Presets</h2>
+          <div id="gPresets" class="mk-list wrap"></div>
+          <div class="prov-row">
+            <input id="gName" type="text" placeholder="name this graph…" spellcheck="false"/>
+            <button id="gSave" class="mini" type="button">Save</button>
+          </div>
+        </div>
+
+        <button id="gApply" class="build" type="button">
+          <span class="build-label">Apply to selected keys</span>
+          <span class="build-shine"></span>
+        </button>
+      </section>
+
+      <!-- ══ VIEW: TEXT ANIMS ═══════════════════════════ -->
+      <section class="view" id="view-text">
+        <div class="card">
+          <div class="grid2">
+            <label>Anim IN duration (s)<input id="durIn" type="number" step="0.05" min="0.05" value="0.5"/></label>
+            <label>Anim OUT duration (s)<input id="durOut" type="number" step="0.05" min="0.05" value="0.5"/></label>
+          </div>
+          <p class="hint">Select layer(s) in AE, then hit an animation. IN anims start at the layer's in-point, OUT anims end at its out-point.</p>
+        </div>
+        <h2 class="kit-h">In</h2>
+        <div class="kitgrid" id="tanimIn"></div>
+        <h2 class="kit-h">Out</h2>
+        <div class="kitgrid" id="tanimOut"></div>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="./js/CSInterface.js"></script>
+  <script src="./js/clickfx.js"></script>
+  <script src="./js/main.js"></script>
+  <script src="./js/fastreverse.js"></script>
+  <script src="./js/beatmarker.js"></script>
+  <script src="./js/toolkit.js"></script>
+  <script src="./js/textanims.js"></script>
+  <script src="./js/graph.js"></script>
+  <script src="./js/ai.js"></script>
+</body>
+</html>

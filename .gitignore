@@ -1,0 +1,14 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.log
+
+# Packaging artifacts (attach the signed .zxp to a GitHub Release instead)
+*.zxp
+*.p12
+node_modules/
