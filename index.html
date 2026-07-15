@@ -29,6 +29,7 @@
     <nav id="rail">
       <button class="rail-btn" data-nav="ai"   title="AI assistant"><span class="rail-ico">✦</span><span class="rail-lab">AI</span></button>
       <button class="rail-btn" data-nav="kit"  title="Toolkit"><span class="rail-ico">⚡</span><span class="rail-lab">Kit</span></button>
+      <button class="rail-btn" data-nav="presets" title="Presets"><span class="rail-ico">▦</span><span class="rail-lab">Presets</span></button>
       <button class="rail-btn" data-nav="graph" title="Graph editor"><span class="rail-ico">∿</span><span class="rail-lab">Graph</span></button>
       <button class="rail-btn" data-nav="text" title="Text animations"><span class="rail-ico">T</span><span class="rail-lab">Text</span></button>
     </nav>
@@ -37,6 +38,7 @@
       <header class="topbar">
         <div class="brand">THEO<span class="accent">REVERSE</span></div>
         <div class="top-right">
+          <span id="liveCount" class="live-count hidden"><span class="live-dot"></span><span id="liveNum">0</span> online</span>
           <button id="who" class="chip" type="button" title="change name"></button>
           <div class="status"><span id="dot" class="dot"></span><span id="hostinfo">connecting…</span></div>
         </div>
@@ -92,9 +94,11 @@
 
         <div class="card qr">
           <h2 class="kit-h in-card">Quick Reverse</h2>
-          <label class="path">Your reverse .ffx (Twixtor + zooms baked in)
-            <input id="qrPath" type="text" value="C:\Edits\Reverse\in.ffx" spellcheck="false"/>
-          </label>
+          <p class="small muted" style="margin:0 0 8px">Your reverse .ffx (Twixtor + zooms baked in)</p>
+          <div class="pick-row">
+            <button id="qrPick" class="pick-btn" type="button"><span class="pick-ico">＋</span> Choose .ffx</button>
+            <span id="qrFile" class="pick-name muted">no file chosen</span>
+          </div>
           <button id="qrGo" class="build small-build" type="button">Apply to selected · auto-stretch</button>
         </div>
 
@@ -158,9 +162,24 @@
               <label>H<input id="h" type="number" value="1920"/></label>
               <label>FPS<input id="fps" type="number" value="30"/></label>
             </div>
-            <label class="path">Twixtor preset<input id="twixtor" type="text" value="C:\Edits\Reverse\TWIXTOR FPS.ffx"/></label>
-            <label class="path">Reverse in<input id="rin" type="text" value="C:\Edits\Reverse\in.ffx"/></label>
-            <label class="path">Reverse out<input id="rout" type="text" value="C:\Edits\Reverse\out.ffx"/></label>
+            <div class="set-pick">
+              <span class="set-pick-lab">Twixtor preset</span>
+              <button class="pick-btn" data-for="twixtor" data-ls="tr_fx_twixtor" type="button"><span class="pick-ico">＋</span> Choose</button>
+              <span class="pick-name muted" id="twixtorName">none</span>
+              <input id="twixtor" type="hidden"/>
+            </div>
+            <div class="set-pick">
+              <span class="set-pick-lab">Reverse in</span>
+              <button class="pick-btn" data-for="rin" data-ls="tr_fx_rin" type="button"><span class="pick-ico">＋</span> Choose</button>
+              <span class="pick-name muted" id="rinName">none</span>
+              <input id="rin" type="hidden"/>
+            </div>
+            <div class="set-pick">
+              <span class="set-pick-lab">Reverse out</span>
+              <button class="pick-btn" data-for="rout" data-ls="tr_fx_rout" type="button"><span class="pick-ico">＋</span> Choose</button>
+              <span class="pick-name muted" id="routName">none</span>
+              <input id="rout" type="hidden"/>
+            </div>
             <label class="check"><input id="applyTwixtor" type="checkbox" checked/> apply Twixtor</label>
           </div>
         </details>
@@ -276,6 +295,25 @@
         <h2 class="kit-h">Out</h2>
         <div class="kitgrid" id="tanimOut"></div>
       </section>
+
+      <!-- ══ VIEW: PRESETS ══════════════════════════════ -->
+      <section class="view" id="view-presets">
+        <div class="pv-head">
+          <h2 class="kit-h">Presets</h2>
+          <div class="pv-actions">
+            <button id="pNewFolder" class="ghost" type="button">＋ folder</button>
+            <button id="pAdd" class="mini" type="button">＋ Add preset</button>
+          </div>
+        </div>
+        <div id="pFolderRow" class="pick-row hidden">
+          <input id="pFolderName" type="text" placeholder="folder name…" spellcheck="false"/>
+          <button id="pFolderAdd" class="mini" type="button">Add</button>
+        </div>
+        <p class="hint" style="margin:0 0 10px">Add your .ffx presets, sort them into folders, then select layer(s) in AE and hit <b>Apply</b>.</p>
+        <div id="pFolders" class="pv-folders"></div>
+        <div id="pList" class="pv-list"></div>
+        <p id="pEmpty" class="hint pv-empty hidden">No presets here yet — hit <b>Add preset</b> and pick a .ffx.</p>
+      </section>
     </div>
   </div>
 
@@ -289,6 +327,8 @@
   <script src="./js/toolkit.js"></script>
   <script src="./js/textanims.js"></script>
   <script src="./js/graph.js"></script>
+  <script src="./js/presets.js"></script>
+  <script src="./js/presence.js"></script>
   <script src="./js/ai.js"></script>
 </body>
 </html>

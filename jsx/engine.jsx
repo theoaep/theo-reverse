@@ -415,6 +415,32 @@ function theoReverse_precompEach() {
     } catch (e2) { try { app.endUndoGroup(); } catch (e3) {} return "ERR:" + e2.toString(); }
 }
 
+// Pick a preset file via a native open dialog — returns "OK:<path>" (or "OK:" if cancelled)
+function theoReverse_pickFile() {
+    try {
+        var f = File.openDialog("Choose a preset (.ffx)", "After Effects preset:*.ffx", false);
+        if (!f) return "OK:";              // cancelled
+        return "OK:" + f.fsName;
+    } catch (e) { return "ERR:" + e.toString(); }
+}
+
+// Apply an animation preset (.ffx) to each selected layer (no time-stretch)
+function theoReverse_applyPreset(path) {
+    try {
+        var comp = activeCompOrErr();
+        if (!comp) return "ERR:Open a comp first.";
+        if (!fileExists(path)) return "ERR:Preset file not found.";
+        var sel = comp.selectedLayers;
+        if (!sel.length) return "ERR:Select layer(s) first.";
+        var f = new File(path);
+        app.beginUndoGroup("TR Apply Preset");
+        var n = 0, i;
+        for (i = 0; i < sel.length; i++) { try { sel[i].applyPreset(f); n++; } catch (e) {} }
+        app.endUndoGroup();
+        return "OK:Applied to " + n + " layer" + (n === 1 ? "" : "s") + ".";
+    } catch (e2) { try { app.endUndoGroup(); } catch (e3) {} return "ERR:" + e2.toString(); }
+}
+
 // Save Frame — export the current frame of the active comp as a PNG (a save dialog picks where)
 function theoReverse_saveFrame() {
     try {

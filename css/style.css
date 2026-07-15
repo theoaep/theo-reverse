@@ -210,6 +210,59 @@ body::after  { background: radial-gradient(circle, var(--g2), transparent 62%); 
   border-radius: 8px; transition: color 150ms ease, background 150ms ease; }
 .update-skip:hover { color: var(--fg); background: rgba(255,255,255,0.07); }
 
+/* ── live "N online" badge ───────────────────────────── */
+.live-count { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700;
+  color: var(--fg); background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.32);
+  border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 7px #34d399;
+  animation: livePulse 2s ease-in-out infinite; }
+@keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* ── file picker (Quick Reverse + Presets) ───────────── */
+.pick-row { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; }
+.pick-btn { flex: none; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--fg);
+  font: inherit; font-size: 11px; font-weight: 600; border-radius: 10px; padding: 7px 12px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: border-color 150ms ease, background 150ms ease; }
+.pick-btn:hover { border-color: rgba(236,72,153,0.5); background: var(--card-hi); }
+.pick-ico { font-size: 13px; font-weight: 800; }
+.pick-name { flex: 1; min-width: 0; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-row input { flex: 1; min-width: 0; }
+.set-pick { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.set-pick-lab { flex: none; width: 92px; font-size: 10px; color: var(--muted); }
+
+/* ── presets view ────────────────────────────────────── */
+.pv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.pv-head .kit-h { margin: 0; }
+.pv-actions { display: flex; gap: 7px; flex: none; }
+.pv-folders { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.pfolder { border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--muted);
+  font: inherit; font-size: 10.5px; font-weight: 600; border-radius: 999px; padding: 4px 11px; cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease; }
+.pfolder:hover { color: var(--fg); border-color: rgba(255,255,255,0.2); }
+.pfolder.on { background: var(--grad); color: #fff; border-color: transparent; }
+.pfolder .cnt { opacity: 0.7; font-weight: 700; margin-left: 2px; }
+.pfolder .fdel { font-weight: 800; opacity: 0.75; }
+.pfolder .fdel:hover { opacity: 1; }
+.pv-list { display: flex; flex-direction: column; gap: 6px; }
+.preset { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--border);
+  border-radius: 11px; background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012));
+  transition: border-color 150ms ease; }
+.preset:hover { border-color: rgba(255,255,255,0.16); }
+.preset-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.preset-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preset-sub { font-size: 9.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preset-apply { flex: none; border: 0; border-radius: 999px; background: var(--grad); color: #fff;
+  font: inherit; font-size: 10.5px; font-weight: 700; padding: 5px 13px; cursor: pointer;
+  transition: box-shadow 160ms ease, transform 140ms ease; }
+.preset-apply:hover { box-shadow: 0 4px 14px rgba(236,72,153,0.42); }
+.preset-apply:active { transform: scale(0.95); }
+.preset-del { flex: none; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 15px; line-height: 1; padding: 2px 6px; border-radius: 7px;
+  transition: color 150ms ease, background 150ms ease; }
+.preset-del:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.pv-empty { text-align: center; padding: 16px 8px; }
+
 /* ── cards ───────────────────────────────────────────── */
 .card {
   position: relative;

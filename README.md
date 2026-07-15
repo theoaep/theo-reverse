@@ -45,8 +45,9 @@ Type your name once → every launch greets you by name. Click the **"hi, …"**
   **Drop N markers** writes composition markers onto your comp's timeline (frame-snapped, optional
   "clear existing first"). Note: AE freezes scripting during its *own* preview, so the panel plays
   the audio itself — tap to the panel's playback, and markers land at `layerStart + panel time`.
-- **Quick Reverse** — point at your reverse `.ffx` (Twixtor + zooms baked in), select layers,
-  hit apply: the preset lands on each layer **auto-stretched to that layer's length**.
+- **Quick Reverse** — click **Choose .ffx** to pick your reverse preset (Twixtor + zooms baked in) via
+  a native file dialog — no typed paths. Select layers, hit apply: the preset lands on each layer
+  **auto-stretched to that layer's length**. The chosen file is remembered.
 - Tools grid: **Save Frame** (📸 exports the current frame of the active comp to a PNG — a save
   dialog picks where; defaults to the project folder, named `<comp> f<frame>.png`), **Precomp Each**
   (each selected layer → its own comp-sized precomp with all attributes moved in, timeline position
@@ -78,6 +79,25 @@ Set **Anim IN duration** / **Anim OUT duration**, select layer(s), click an anim
 IN anims start at the layer in-point; OUT anims end at the out-point.
 IN: Fade, Pop, Slide Up/Down, Blur, Typewriter*, Tracking*. OUT: Fade, Pop, Slide Up/Down, Blur,
 Tracking*. (*needs a text layer)
+
+### ▦ Presets — your `.ffx` library
+- **Add preset** → native file dialog to pick a `.ffx`; it's saved to your library (the file stays
+  where it is on disk — the library just remembers it).
+- **Folders** — **＋ folder** to make one; click a folder chip to filter; the active folder's **×**
+  deletes it (its presets fall back to **Unfiled**). **All** shows everything.
+- **Apply** — select layer(s) in AE, hit **Apply** on any preset and it's applied to each.
+- The library lives in your localStorage; nothing is uploaded.
+
+### Live "N online"
+The top bar shows how many people have the panel open right now (green pulse). It's opt-in: it only
+appears once `PRESENCE_URL` is set in [js/presence.js](js/presence.js). Setup (free, ~3 min, no server
+code): create a **Firebase** project → add a **Realtime Database** → set its rules so `/presence` is
+public, then paste the database URL:
+```json
+{ "rules": { "presence": { ".read": true, ".write": true } } }
+```
+Each open panel writes a timestamp every ~20s; the badge counts panels seen in the last 45s and cleans
+up stale entries. Left unset, the badge just stays hidden.
 
 ## Install (for users)
 Grab the latest release zip, unzip, and run **`install.bat`** — it enables unsigned extensions

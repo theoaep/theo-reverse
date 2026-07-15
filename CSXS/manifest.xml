@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionManifest Version="7.0" ExtensionBundleId="com.theo.reverse"
-    ExtensionBundleVersion="1.0.0" ExtensionBundleName="THEO REVERSE"
+    ExtensionBundleVersion="1.1.0" ExtensionBundleName="THEO REVERSE"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.theo.reverse.panel" Version="1.0.0"/>
+    <Extension Id="com.theo.reverse.panel" Version="1.1.0"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

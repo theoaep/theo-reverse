@@ -9,19 +9,58 @@
   $("openFast").addEventListener("click", () => TR.showView("fast"));
   $("backKit").addEventListener("click", () => TR.showView("kit"));
 
-  /* ── Quick Reverse ───────────────────────────────────── */
+  /* ── Quick Reverse (file picker, no typed paths) ─────── */
+  const baseName = (p) => String(p).replace(/.*[\\/]/, "");
+  function setQR(path) {
+    localStorage.setItem("tr_qr_path", path || "");
+    const el = $("qrFile");
+    el.textContent = path ? baseName(path) : "no file chosen";
+    el.title = path || "";
+    el.classList.toggle("muted", !path);
+  }
+  $("qrPick").addEventListener("click", () => {
+    TR.evalJSX("theoReverse_pickFile()").then((res) => {
+      if (!res || res.indexOf("OK:") !== 0) { TR.toast(res || "couldn't open the file picker.", "err"); return; }
+      const path = res.slice(3).trim();
+      if (!path) return;                       // cancelled
+      setQR(path);
+      TR.toast("preset set · " + baseName(path), "ok");
+    });
+  });
+  setQR(localStorage.getItem("tr_qr_path") || "");
+
+  /* generic file pickers (Fast Reverse settings) — write to a hidden input + remember the path */
+  document.querySelectorAll(".pick-btn[data-for]").forEach((btn) => {
+    const target = $(btn.getAttribute("data-for"));
+    const lsKey = btn.getAttribute("data-ls");
+    const nameEl = $(btn.getAttribute("data-for") + "Name");
+    const setVal = (path) => {
+      if (target) target.value = path || "";
+      if (lsKey) localStorage.setItem(lsKey, path || "");
+      if (nameEl) { nameEl.textContent = path ? baseName(path) : "none"; nameEl.title = path || ""; nameEl.classList.toggle("muted", !path); }
+    };
+    const saved = lsKey ? (localStorage.getItem(lsKey) || "") : "";
+    if (saved) setVal(saved);
+    btn.addEventListener("click", () => {
+      TR.evalJSX("theoReverse_pickFile()").then((res) => {
+        if (!res || res.indexOf("OK:") !== 0) { TR.toast(res || "couldn't open the file picker.", "err"); return; }
+        const path = res.slice(3).trim();
+        if (!path) return;
+        setVal(path);
+        TR.toast("set · " + baseName(path), "ok");
+      });
+    });
+  });
+
   $("qrGo").addEventListener("click", () => {
-    const path = $("qrPath").value.trim();
-    if (!path) { TR.toast("Point me at your reverse .ffx first.", "err"); return; }
-    localStorage.setItem("tr_qr_path", path);
+    const path = (localStorage.getItem("tr_qr_path") || "").trim();
+    if (!path) { TR.toast("Choose your reverse .ffx first.", "err"); return; }
     TR.toast("Applying reverse to selected layers…");
     TR.evalJSX("theoReverse_quickReverse(" + JSON.stringify(path) + ")").then((res) => {
       if (res && res.indexOf("OK") === 0) TR.toast(res.replace(/^OK:?/, "✓ "), "ok");
       else TR.toast(res || "No response from After Effects.", "err");
     });
   });
-  const savedQR = localStorage.getItem("tr_qr_path");
-  if (savedQR) $("qrPath").value = savedQR;
 
   /* ── one-click tools ─────────────────────────────────── */
   // unified line-icon set (24px, currentColor) — swaps out the emoji for a professional look
