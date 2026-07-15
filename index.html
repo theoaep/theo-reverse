@@ -30,6 +30,7 @@
       <button class="rail-btn" data-nav="ai"   title="AI assistant"><span class="rail-ico">✦</span><span class="rail-lab">AI</span></button>
       <button class="rail-btn" data-nav="kit"  title="Toolkit"><span class="rail-ico">⚡</span><span class="rail-lab">Kit</span></button>
       <button class="rail-btn" data-nav="presets" title="Presets"><span class="rail-ico">▦</span><span class="rail-lab">Presets</span></button>
+      <button class="rail-btn" data-nav="roto" title="Auto cutout (roto)"><span class="rail-ico">✂</span><span class="rail-lab">Roto</span></button>
       <button class="rail-btn" data-nav="graph" title="Graph editor"><span class="rail-ico">∿</span><span class="rail-lab">Graph</span></button>
       <button class="rail-btn" data-nav="text" title="Text animations"><span class="rail-ico">T</span><span class="rail-lab">Text</span></button>
     </nav>
@@ -314,6 +315,39 @@
         <div id="pList" class="pv-list"></div>
         <p id="pEmpty" class="hint pv-empty hidden">No presets here yet — hit <b>Add preset</b> and pick a .ffx.</p>
       </section>
+
+      <!-- ══ VIEW: ROTO (auto cutout) ═══════════════════ -->
+      <section class="view" id="view-roto">
+        <div class="roto-head">
+          <h2 class="kit-h">Auto cutout</h2>
+          <button id="rotoDetect" class="ghost" type="button">↻ detect</button>
+        </div>
+        <div id="rotoClip" class="roto-clip"><span class="muted">select your player layer in AE</span></div>
+
+        <div id="rotoSrc" class="seg roto-seg">
+          <button class="seg-btn on" data-src="gemini" type="button">Gemini · still</button>
+          <button class="seg-btn" data-src="matte" type="button">Matte file</button>
+        </div>
+        <div id="rotoMatteOpts" class="roto-matte-opts hidden">
+          <label class="check"><input id="rotoSeq" type="checkbox"/> image sequence</label>
+          <label class="set-lab">Matte<select id="rotoType" class="out-sel"><option value="alpha">Alpha</option><option value="luma">Luma</option></select></label>
+        </div>
+        <p class="hint" style="margin:2px 0 10px">Gemini reads the current frame and cuts the player — great for a still/freeze (it can flicker on motion). Matte file applies any alpha/luma you already have as a track matte.</p>
+
+        <button id="rotoGo" class="build" type="button">Auto-isolate player</button>
+        <div id="rotoStatus" class="roto-status"></div>
+
+        <div id="rotoAdjust" class="card roto-adjust hidden">
+          <h2 class="kit-h in-card">Adjust</h2>
+          <label class="roto-slider">Edge choke <input id="rotoEdge" type="range" min="-20" max="20" step="1" value="0"/></label>
+          <div class="roto-adjust-row">
+            <button id="rotoInvert" class="ghost" type="button">⇄ invert</button>
+            <button id="rotoGarbage" class="ghost" type="button">＋ garbage mask</button>
+            <label class="check"><input id="rotoBg" type="checkbox"/> black BG</label>
+          </div>
+          <button id="rotoProceed" class="build small-build" type="button">Proceed — lock it in</button>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -330,5 +364,6 @@
   <script src="./js/presets.js"></script>
   <script src="./js/presence.js"></script>
   <script src="./js/ai.js"></script>
+  <script src="./js/roto.js"></script>
 </body>
 </html>

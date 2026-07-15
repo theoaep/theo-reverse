@@ -117,6 +117,33 @@
     const j = await gJsonOrThrow(r);
     return (j.models || []).map((m) => ({ id: m.name, methods: m.supportedGenerationMethods || [] }));
   }
+
+  // One-shot image segmentation for the Roto view. base64Png = a PNG frame; returns
+  // [{ box_2d:[ymin,xmin,ymax,xmax] (0-1000), mask:<base64 png|data url>, label }] for the subject.
+  async function geminiSegment(base64Png, target) {
+    const model = getModel();
+    const prompt =
+      "Give the segmentation mask for " + (target || "the single most prominent person (the football player)") +
+      " in this image. Output ONLY a JSON array; each item has \"box_2d\": [ymin,xmin,ymax,xmax] normalized 0-1000, " +
+      "\"mask\": a base64 PNG probability mask cropped to that box, and \"label\". If you can't make a mask, still return box_2d.";
+    const body = JSON.stringify({
+      contents: [{ role: "user", parts: [
+        { inlineData: { mimeType: "image/png", data: base64Png } },
+        { text: prompt }
+      ] }],
+      generationConfig: { temperature: 0, responseMimeType: "application/json" }
+    });
+    const r = await fetch(gWithKey(GBASE + model + ":generateContent"), { method: "POST", headers: gHeaders(), body });
+    const j = await gJsonOrThrow(r);
+    const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
+    let text = ""; for (let i = 0; i < parts.length; i++) if (parts[i].text) text += parts[i].text;
+    let arr = null;
+    try { arr = JSON.parse(text); } catch (e) {
+      const m = text.match(/\[[\s\S]*\]/); if (m) { try { arr = JSON.parse(m[0]); } catch (e2) {} }
+    }
+    if (!arr || !arr.length) throw new Error("couldn't spot a subject in that frame");
+    return arr;
+  }
   function retryOtherModel(e) {
     if (!e) return false;
     if (e.status === 429 || e.status === 404) return true;
@@ -789,4 +816,11 @@
   $("aiIn").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   });
+
+  // expose for the Roto view
+  if (window.TR) {
+    window.TR.segment = geminiSegment;
+    window.TR.aiError = friendlyError;
+    window.TR.hasAIKey = hasKey;
+  }
 })();
