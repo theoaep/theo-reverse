@@ -956,6 +956,35 @@ function theoReverse_textAnim(kind, dur) {
                     if (kind === "trackIn") { trKeys(tramt, [a, b], [40, 0]); trKeys(op, [a, b], [0, 100]); }
                     else { trKeys(tramt, [a, b], [0, 40]); trKeys(op, [a, b], [100, 0]); }
                 }
+                else if (kind === "fadeUpWords" || kind === "fadeUpWordsBlur") {
+                    if (!isTextLayer(ly)) { skippedText++; continue; }
+                    var animW = ly.property("ADBE Text Properties").property("ADBE Text Animators").addProperty("ADBE Text Animator");
+                    animW.name = (kind === "fadeUpWordsBlur") ? "TR Fade Up Words + Blur" : "TR Fade Up Words";
+                    var selW = animW.property("ADBE Text Selectors").addProperty("ADBE Text Selector");
+                    try { selW.property("ADBE Text Range Advanced").property("ADBE Text Range Type2").setValue(3); } catch (eW) {}   // Based On: Words
+                    var apW = animW.property("ADBE Text Animator Properties");
+                    apW.addProperty("ADBE Text Opacity").setValue(0);
+                    try { apW.addProperty("ADBE Text Position 3D").setValue([0, 40, 0]); } catch (ePos) {}   // +Y = below -> rises up on reveal
+                    if (kind === "fadeUpWordsBlur") { try { apW.addProperty("ADBE Text Blur").setValue([24, 24]); } catch (eB) {} }
+                    trKeys(selW.property("ADBE Text Percent Start"), [a, b], [0, 100]);
+                }
+                else if (kind === "randomChars") {
+                    if (!isTextLayer(ly)) { skippedText++; continue; }
+                    var animR = ly.property("ADBE Text Properties").property("ADBE Text Animators").addProperty("ADBE Text Animator");
+                    animR.name = "TR Random Chars";
+                    var selR = animR.property("ADBE Text Selectors").addProperty("ADBE Text Selector");
+                    try {
+                        var advR = selR.property("ADBE Text Range Advanced");
+                        advR.property("ADBE Text Range Type2").setValue(1);        // Based On: Characters
+                        advR.property("ADBE Text Randomize Order").setValue(1);     // random reveal order
+                    } catch (eR) {}
+                    animR.property("ADBE Text Animator Properties").addProperty("ADBE Text Opacity").setValue(0);
+                    trKeys(selR.property("ADBE Text Percent Start"), [a, b], [0, 100]);
+                }
+                else if (kind === "fadeOutSlow") {
+                    var dSlow = Math.min(span, Math.max(d * 2.5, 1.6));   // clearly slower than a normal fade
+                    trKeys(op, [ly.outPoint - dSlow, ly.outPoint], [100, 0]);
+                }
                 else { continue; }
                 done++;
             } catch (eA) {}

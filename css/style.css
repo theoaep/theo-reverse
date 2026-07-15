@@ -301,6 +301,14 @@ body::after  { background: radial-gradient(circle, var(--g2), transparent 62%); 
 .tanim-blurOut { animation: ta-blurOut 2.6s ease infinite; }
 @keyframes ta-trackOut { 0%{opacity:0;letter-spacing:0.5px} 15%{opacity:1;letter-spacing:0.5px} 55%{opacity:1;letter-spacing:0.5px} 88%,100%{opacity:0;letter-spacing:7px} }
 .tanim-trackOut { animation: ta-trackOut 2.7s ease infinite; }
+@keyframes ta-fadeUpWords { 0%{opacity:0;transform:translateY(9px)} 26%{opacity:1;transform:translateY(0)} 82%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(0)} }
+.tanim-fadeUpWords { animation: ta-fadeUpWords 2.6s var(--ease-out) infinite; }
+@keyframes ta-fadeUpWordsBlur { 0%{opacity:0;transform:translateY(9px);filter:blur(5px)} 28%{opacity:1;transform:translateY(0);filter:blur(0)} 82%{opacity:1;transform:translateY(0);filter:blur(0)} 100%{opacity:0;transform:translateY(0);filter:blur(0)} }
+.tanim-fadeUpWordsBlur { animation: ta-fadeUpWordsBlur 2.7s var(--ease-out) infinite; }
+@keyframes ta-rc { 0%{opacity:0} 12%{opacity:1} 82%{opacity:1} 100%{opacity:0} }
+.tanim-randomChars span { display: inline-block; animation: ta-rc 2.6s ease infinite; }
+@keyframes ta-fadeOutSlow { 0%{opacity:0} 12%{opacity:1} 45%{opacity:1} 96%,100%{opacity:0} }
+.tanim-fadeOutSlow { animation: ta-fadeOutSlow 3.4s ease infinite; }
 
 /* ── cards ───────────────────────────────────────────── */
 .card {
@@ -706,6 +714,6 @@ input:focus { outline: 0; border-color: var(--g2); box-shadow: 0 0 0 3px rgba(23
   .tool:hover, .tool:hover .tool-ico, .rail-btn.active, .hero:hover .hero-ico { transform: none; animation: none; }
   .node, .playbtn, .build, .ghost, .tappad, .chip, .tool, .rail-btn { transition-duration: 120ms; }
   /* text-anim previews go static */
-  .tanim-word { animation: none !important; opacity: 1 !important; filter: none !important;
+  .tanim-word, .tanim-word span { animation: none !important; opacity: 1 !important; filter: none !important;
     transform: none !important; letter-spacing: 0.5px !important; width: auto !important; border-right: 0 !important; }
 }
