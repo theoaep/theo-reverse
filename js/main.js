@@ -70,8 +70,8 @@
     const bar = $("updateBar"); if (!bar) return;
     $("updateVer").textContent = "Update available · v" + ver;
     $("updateNote").textContent = notes ? " — " + notes : "";
-    $("updateGet").onclick = () => TR.openURL(url);
-    $("updateX").onclick = () => { bar.classList.add("hidden"); localStorage.setItem("tr_update_skip", ver); };
+    $("updateGet").onclick = () => TR.openURL(url);   // opens the release page (zip + installers)
+    $("updateSkip").onclick = () => { bar.classList.add("hidden"); localStorage.setItem("tr_update_skip", ver); };
     bar.classList.remove("hidden");
   }
   function checkForUpdate() {

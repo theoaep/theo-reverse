@@ -205,9 +205,10 @@ body::after  { background: radial-gradient(circle, var(--g2), transparent 62%); 
   transition: transform 140ms var(--ease-out), box-shadow 180ms ease; }
 .update-btn:hover { box-shadow: 0 4px 14px rgba(236,72,153,0.42); }
 .update-btn:active { transform: scale(0.95); }
-.update-x { flex: none; border: 0; background: transparent; cursor: pointer; color: var(--muted);
-  font-size: 16px; line-height: 1; padding: 2px 4px; transition: color 150ms ease; }
-.update-x:hover { color: var(--fg); }
+.update-skip { flex: none; border: 0; background: transparent; cursor: pointer; color: var(--muted);
+  font: inherit; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; padding: 4px 7px;
+  border-radius: 8px; transition: color 150ms ease, background 150ms ease; }
+.update-skip:hover { color: var(--fg); background: rgba(255,255,255,0.07); }
 
 /* ── cards ───────────────────────────────────────────── */
 .card {

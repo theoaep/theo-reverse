@@ -1,0 +1,56 @@
+THEO REVERSE - install (Windows + After Effects)
+=================================================
+
+EASY WAY
+--------
+1. Double-click  install.bat
+2. When it says Done, restart After Effects.
+3. Open it:  Window  >  Extensions  >  THEO REVERSE
+
+If Windows SmartScreen pops up ("Windows protected your PC"), click
+"More info"  ->  "Run anyway". It's just a copy script - it only copies the
+panel into Adobe's extensions folder and lets AE load it.
+
+
+MANUAL WAY  (only if install.bat didn't work)
+---------------------------------------------
+1. Copy this whole folder into Adobe's CEP extensions folder and name it
+   com.theo.reverse
+
+   The extensions folder is:
+     %APPDATA%\Adobe\CEP\extensions
+
+   Tip: press Win+R, paste this and hit Enter:
+     %APPDATA%\Adobe\CEP\extensions
+   (If the "extensions" folder isn't there, create it.)
+
+   When done it should look like:
+     ...\Adobe\CEP\extensions\com.theo.reverse\index.html
+
+2. Turn on unsigned extensions (one time only).
+   Press Win+R, type  regedit , hit Enter. Go to (create the keys if missing):
+     HKEY_CURRENT_USER\Software\Adobe\CSXS.11
+     HKEY_CURRENT_USER\Software\Adobe\CSXS.12
+   In EACH one, make a new String value:
+     Name:  PlayerDebugMode
+     Data:  1
+
+3. Restart After Effects.
+
+4. Open it:  Window  >  Extensions  >  THEO REVERSE
+
+
+UPDATING
+--------
+When the panel shows "Update available", click Install - it opens the newest
+release. Download the new zip, run install.bat again (it overwrites the old
+files), restart AE. Done.
+
+To stop a version's reminder, click Skip - it stays hidden until an even
+newer version comes out.
+
+
+UNINSTALL
+---------
+Delete the  com.theo.reverse  folder from:
+  %APPDATA%\Adobe\CEP\extensions

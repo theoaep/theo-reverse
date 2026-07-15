@@ -79,31 +79,33 @@ IN anims start at the layer in-point; OUT anims end at the out-point.
 IN: Fade, Pop, Slide Up/Down, Blur, Typewriter*, Tracking*. OUT: Fade, Pop, Slide Up/Down, Blur,
 Tracking*. (*needs a text layer)
 
+## Install (for users)
+Grab the latest release zip, unzip, and run **`install.bat`** — it enables unsigned extensions
+(`PlayerDebugMode`) and copies the panel into `%APPDATA%\Adobe\CEP\extensions\com.theo.reverse`.
+Restart AE → **Window → Extensions → THEO REVERSE**. Manual steps are in [INSTALL.txt](INSTALL.txt).
+
 ## Releasing + "update available" banner
-The panel checks for a newer version on launch and shows a dismissible **Update** banner at the top
-if one is live. Clicking **Update** opens the download page; **×** hides it until the *next* version.
+On launch the panel checks `UPDATE_URL` (already wired to
+`https://api.github.com/repos/theoaep/theo-reverse/releases/latest`) and, if a newer version is live,
+shows a banner: **"Update available · v1.1.0 — <note>"** with **Install** (opens the release page —
+zip + installers) and **Skip** (hides it until an even newer version). Skips are remembered in
+localStorage (`tr_update_skip`).
 
-**One-time wiring** (in [js/main.js](js/main.js)): set `UPDATE_URL` to a real source. Two options —
+**To ship a new version:**
+1. Bump the version in **both** places (keep them equal):
+   - `CSXS/manifest.xml` → `ExtensionBundleVersion` **and** the `<Extension … Version>`
+   - [js/main.js](js/main.js) → `CURRENT_VERSION`
+2. Commit + push.
+3. On GitHub → **Releases → Draft a new release** → tag `vX.Y.Z` → write a short description (its
+   first line becomes the banner note) → **Publish**. GitHub auto-attaches the source zip (which
+   already contains `install.bat` + `INSTALL.txt`); optionally attach a signed `.zxp` too.
 
-1. **GitHub Releases (recommended, zero upkeep).** Push this folder to a GitHub repo, then for each
-   release publish a **Release** with tag `vX.Y.Z` and attach the packaged `.zxp`. Point
-   `UPDATE_URL` at `https://api.github.com/repos/<user>/theo-reverse/releases/latest`. The panel reads
-   the tag as the version, the release body's first line as the note, and links to the release page.
-2. **A JSON you host anywhere.** Host [version.json](version.json) (GitHub raw, a gist, your site) and
-   point `UPDATE_URL` at it. Shape: `{ "version": "1.1.0", "notes": "…", "url": "<download page>" }`.
+Everyone still on an older `CURRENT_VERSION` sees the banner on their next launch. The banner reads
+the release **tag** as the version and links to its page. (Alternative to GitHub Releases: host
+[version.json](version.json) somewhere and point `UPDATE_URL` at it — `{ "version", "notes", "url" }`.)
 
-**Each release, bump the version in two places (keep them equal):**
-- `CSXS/manifest.xml` → `ExtensionBundleVersion` **and** the `<Extension … Version>`
-- `js/main.js` → `CURRENT_VERSION`
-
-Then update the remote (publish the GitHub Release, or edit `version.json`). Users on an older
-`CURRENT_VERSION` see the banner next launch. (Until `UPDATE_URL` is set to a real repo, the check is
-skipped — no failed network calls.)
-
-**Packaging a `.zxp`:** sign with Adobe's `ZXPSignCmd` (needs a self-signed or real cert.p12) →
-distribute the `.zxp`; users install with the free **ZXP/UXP Installer** (aescripts) or **Anastasiy's
-Extension Manager**. (Dev installs run unpacked via the CEP `PlayerDebugMode` junction; end users get
-the signed `.zxp`.)
+**Optional — signed `.zxp`:** sign with Adobe's `ZXPSignCmd` (needs a cert.p12) so users can install
+with the **ZXP/UXP Installer** instead of the `.bat`. Not required — the `.bat` path works today.
 
 ## Debugging
 - Panel DevTools: open panel → browse `http://localhost:8099` in Chrome.
