@@ -48,7 +48,11 @@ Type your name once → every launch greets you by name. Click the **"hi, …"**
 - **Quick Reverse** — click **Choose .ffx** to pick your reverse preset (Twixtor + zooms baked in) via
   a native file dialog — no typed paths. Select layers, hit apply: the preset lands on each layer
   **auto-stretched to that layer's length**. The chosen file is remembered.
-- Tools grid: **Save Frame** (📸 exports the current frame of the active comp to a PNG — a save
+- Tools grid — time-savers first: **Speed Ramp** (eased time-remap slow→fast→slow + Pixel Motion, one
+  click smooth ramp), **Beat Zoom** (a punch-in on *every comp marker* — drop beats with Tap Beatmarker,
+  select layer(s), and it zooms on each beat), **Flash** (a white flash transition at the playhead),
+  **Organize** (sorts every project item into Comps / Footage / Solids / Audio folders). Then:
+  **Save Frame** (📸 exports the current frame of the active comp to a PNG — a save
   dialog picks where; defaults to the project folder, named `<comp> f<frame>.png`), **Precomp Each**
   (each selected layer → its own comp-sized precomp with all attributes moved in, timeline position
   kept — like AE's Pre-compose "Move all attributes"), Split Layer, Reverse Layer, Freeze Frame, Loop Layer,
@@ -87,6 +91,13 @@ Tracking*. (*needs a text layer)
   deletes it (its presets fall back to **Unfiled**). **All** shows everything.
 - **Apply** — select layer(s) in AE, hit **Apply** on any preset and it's applied to each.
 - The library lives in your localStorage; nothing is uploaded.
+
+### ❒ Projects — your `.aep` library
+- **Add .aep** → pick a saved project to remember; **Save current** → Save-As the open project into
+  your library. Same folders/filter model as Presets.
+- **Import** (one click) → merges that project's comps + footage **into whatever you have open now**
+  (`app.project.importFile` on the `.aep`) — no digging through File › Import. Great for reusable
+  title scenes, transition packs, or a starter template.
 
 ### Live "N online"
 The top bar shows how many people have the panel open right now (green pulse). It's opt-in: it only

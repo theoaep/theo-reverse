@@ -463,250 +463,169 @@ function theoReverse_saveFrame() {
 }
 
 // ===========================================================================
-// AUTO-CUTOUT (roto) — compute a matte OUTSIDE AE, apply it as a track matte.
-// (AE's Roto Brush isn't scriptable; this delivers the same result cleanly.)
+// PROJECT LIBRARY — import a saved .aep into the current project, or save one out
 // ===========================================================================
-
-// Report the selected player layer so the panel knows what to matte
-function theoReverse_rotoSelectedInfo() {
+function theoReverse_pickProject() {
     try {
-        var comp = activeCompOrErr();
-        if (!comp) return "ERR:Open a comp first.";
-        var sel = comp.selectedLayers;
-        if (!sel.length) return "ERR:Select the player layer first.";
-        var ly = sel[0];
-        var src = null; try { src = ly.source; } catch (eS) {}
-        var kind = "other", file = "", w = comp.width, h = comp.height, retimed = 0;
-        if (src) {
-            kind = (src instanceof CompItem) ? "precomp" : "footage";
-            try { w = src.width; h = src.height; } catch (eW) {}
-            try { if (src.mainSource && src.mainSource.file) file = src.mainSource.file.fsName; } catch (eF) {}
-        }
-        try { if (ly.timeRemapEnabled) retimed = 1; } catch (eR) {}
-        var fps = Math.round((1 / comp.frameDuration) * 1000) / 1000;
-        var frames = Math.round((ly.outPoint - ly.inPoint) * fps);
-        var nm = String(ly.name).replace(/[;=]/g, " ");
-        return "OK:name=" + nm + ";kind=" + kind + ";file=" + file + ";w=" + Math.round(w) +
-            ";h=" + Math.round(h) + ";in=" + ly.inPoint + ";out=" + ly.outPoint +
-            ";fps=" + fps + ";frames=" + frames + ";retimed=" + retimed + ";index=" + ly.index;
-    } catch (e) { return "ERR:" + e.toString(); }
-}
-
-// Native open-dialog for a matte/video file — returns "OK:<path>" (or "OK:" if cancelled)
-function theoReverse_pickMedia(kind) {
-    try {
-        var filter;
-        if (kind === "video") filter = "Video:*.mov;*.mp4;*.mxf;*.avi";
-        else if (kind === "seq") filter = "Image sequence:*.png;*.tif;*.tiff;*.exr;*.jpg";
-        else filter = "Matte (image or movie):*.png;*.tif;*.tiff;*.exr;*.mov;*.mp4";
-        var f = File.openDialog("Choose a " + (kind || "matte") + " file", filter, false);
+        var f = File.openDialog("Choose an After Effects project", "AE project:*.aep;*.aepx", false);
         if (!f) return "OK:";
         return "OK:" + f.fsName;
     } catch (e) { return "ERR:" + e.toString(); }
 }
 
-// Import a matte image / image-sequence / movie; returns "OK:id=<itemId>;name=.."
-function theoReverse_importSequence(cfg) {
+// Merge an .aep's comps + footage into whatever is open now (one-click File>Import)
+function theoReverse_importProject(path) {
     try {
-        var c = parseConfig(cfg);
-        if (!fileExists(c.path)) return "ERR:File not found: " + c.path;
-        var io = new ImportOptions(new File(c.path));
-        if (c.sequence === "1") { try { io.sequence = true; io.forceAlphabetical = true; } catch (eSeq) {} }
-        var item = app.project.importFile(io);
-        if (c.fps) { try { item.mainSource.conformFrameRate = parseFloat(c.fps); } catch (eFps) { try { item.frameRate = parseFloat(c.fps); } catch (eFr) {} } }
-        try {
-            var folder = null, i;
-            for (i = 1; i <= app.project.numItems; i++) {
-                var it = app.project.item(i);
-                if (it instanceof FolderItem && it.name === "THEO REVERSE roto") { folder = it; break; }
-            }
-            if (!folder) folder = app.project.items.addFolder("THEO REVERSE roto");
-            item.parentFolder = folder;
-        } catch (eFold) {}
-        return "OK:id=" + item.id + ";name=" + String(item.name).replace(/[;=]/g, " ");
+        if (!fileExists(path)) return "ERR:Project not found: " + path;
+        var before = app.project.numItems;
+        app.project.importFile(new ImportOptions(new File(path)));
+        var added = app.project.numItems - before;
+        return "OK:Imported " + added + " item" + (added === 1 ? "" : "s") + " into your project.";
     } catch (e) { return "ERR:" + e.toString(); }
 }
 
-// Place the imported matte above the fill layer and bind it as a track matte (version-aware)
-function theoReverse_applyAlphaMatte(cfg) {
+// Save the current project as an .aep for the library (save dialog). Returns "OK:<path>".
+function theoReverse_saveProjectAs() {
+    try {
+        var name = "THEO REVERSE project";
+        try { if (app.project.file) name = String(app.project.file.name).replace(/\.aep(x)?$/i, ""); } catch (eN) {}
+        var dir = Folder.desktop;
+        try { if (app.project.file) dir = app.project.file.parent; } catch (eD) {}
+        var def = new File(dir.fsName + "/" + name + ".aep");
+        var out = def.saveDlg("Save this project to your library", "AE project:*.aep");
+        if (!out) return "OK:";
+        if (!/\.aepx?$/i.test(out.fsName)) out = new File(out.fsName + ".aep");
+        app.project.save(out);
+        return "OK:" + out.fsName;
+    } catch (e) { return "ERR:" + e.toString(); }
+}
+
+// ===========================================================================
+// TIME-SAVER KIT TOOLS
+// ===========================================================================
+
+// Speed Ramp — eased time-remap (slow->fast->slow) + pixel-motion frame blend
+function theoReverse_speedRamp(cfg) {
     try {
         var comp = activeCompOrErr();
         if (!comp) return "ERR:Open a comp first.";
-        var c = parseConfig(cfg);
         var sel = comp.selectedLayers;
-        var fill = c.fillIndex ? comp.layer(parseInt(c.fillIndex, 10)) : (sel.length ? sel[0] : null);
-        if (!fill) return "ERR:Select the player layer first.";
-        var matteItem = null, i, wantId = parseInt(c.matteId, 10);
-        for (i = 1; i <= app.project.numItems; i++) { if (app.project.item(i).id === wantId) { matteItem = app.project.item(i); break; } }
-        if (!matteItem) return "ERR:Matte footage not found (import first).";
-
-        app.beginUndoGroup("TR Apply Matte");
-        var matteLayer = comp.layers.add(matteItem);
-        matteLayer.moveBefore(fill);                       // directly above the fill
-        try { matteLayer.startTime = fill.startTime; } catch (eSt) {}
-        try { matteLayer.inPoint = fill.inPoint; matteLayer.outPoint = fill.outPoint; } catch (eIn) {}
-
-        var typ = c.type || "alpha";                       // alpha | alphaInv | luma | lumaInv
-        var applied = false;
-        if (typeof fill.setTrackMatte === "function" && typeof TrackMatteType !== "undefined") {
-            var tt = TrackMatteType.ALPHA;
-            if (typ === "alphaInv") tt = TrackMatteType.ALPHA_INVERTED;
-            else if (typ === "luma") tt = TrackMatteType.LUMA;
-            else if (typ === "lumaInv") tt = TrackMatteType.LUMA_INVERTED;
-            try { fill.setTrackMatte(matteLayer, tt); applied = true; } catch (eNew) {}
-        }
-        if (!applied) {                                    // AE 22.x legacy (matte must sit directly above)
+        if (!sel.length) return "ERR:Select a layer first.";
+        app.beginUndoGroup("TR Speed Ramp");
+        var n = 0, i;
+        for (i = 0; i < sel.length; i++) {
+            var ly = sel[i];
             try {
-                if (typ === "alpha") fill.trackMatteType = TrackMatteType.ALPHA;
-                else if (typ === "alphaInv") fill.trackMatteType = TrackMatteType.ALPHA_INVERTED;
-                else if (typ === "luma") fill.trackMatteType = TrackMatteType.LUMA;
-                else fill.trackMatteType = TrackMatteType.LUMA_INVERTED;
-                applied = true;
-            } catch (eOld) {}
+                if (!ly.canSetTimeRemapEnabled) continue;
+                ly.timeRemapEnabled = true;
+                var tr = ly.property("ADBE Time Remapping");
+                while (tr.numKeys > 0) tr.removeKey(1);
+                var srcDur = ly.source ? ly.source.duration : (ly.outPoint - ly.inPoint);
+                tr.setValueAtTime(ly.inPoint, 0);
+                tr.setValueAtTime(ly.outPoint, srcDur);
+                trEase(tr);
+                try { ly.frameBlendingType = FrameBlendingType.PIXEL_MOTION; } catch (eB) {}
+                n++;
+            } catch (eL) {}
+        }
+        comp.frameBlending = true;
+        app.endUndoGroup();
+        return "OK:Speed ramp on " + n + " layer" + (n === 1 ? "" : "s") + " (eased remap + pixel motion).";
+    } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
+}
+
+// Beat Zoom — a punch-in on every comp marker (drop beat markers first). The wow.
+function theoReverse_beatZoom(cfg) {
+    try {
+        var comp = activeCompOrErr();
+        if (!comp) return "ERR:Open a comp first.";
+        var sel = comp.selectedLayers;
+        if (!sel.length) return "ERR:Select the layer(s) to zoom.";
+        var c = parseConfig(cfg || "");
+        var amt = parseFloat(c.amount); if (isNaN(amt) || amt <= 0) amt = 12;      // % punch
+        var settle = parseFloat(c.settle); if (isNaN(settle) || settle <= 0) settle = 0.18;
+        var mk = comp.markerProperty, times = [], j;
+        if (mk && mk.numKeys > 0) { for (j = 1; j <= mk.numKeys; j++) times.push(mk.keyTime(j)); }
+        if (!times.length) return "ERR:No comp markers — drop beat markers first (Kit > Tap Beatmarker).";
+        var fd = comp.frameDuration;
+        app.beginUndoGroup("TR Beat Zoom");
+        var n = 0, i, k;
+        for (i = 0; i < sel.length; i++) {
+            var ly = sel[i];
+            try {
+                var sp = ly.property("ADBE Transform Group").property("ADBE Scale");
+                var base = sp.value;
+                var f = 1 + amt / 100;
+                var peak = base.length === 3 ? [base[0] * f, base[1] * f, base[2]] : [base[0] * f, base[1] * f];
+                sp.setValueAtTime(ly.inPoint, base);
+                for (k = 0; k < times.length; k++) {
+                    var m = times[k];
+                    if (m < ly.inPoint - 0.001 || m > ly.outPoint + 0.001) continue;
+                    sp.setValueAtTime(Math.max(m - fd, ly.inPoint), base);   // rest right before the beat
+                    sp.setValueAtTime(m, peak);                              // punch on the beat
+                    sp.setValueAtTime(Math.min(m + settle, ly.outPoint), base);
+                }
+                trEase(sp);
+                n++;
+            } catch (eL) {}
         }
         app.endUndoGroup();
-        if (!applied) return "ERR:Couldn't set the track matte on this AE version.";
-        return "OK:Matte on (" + typ + "). fillIndex=" + fill.index;
+        return "OK:Beat-zoom on " + n + " layer" + (n === 1 ? "" : "s") + " across " + times.length + " beats.";
     } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
 }
 
-// pick the first folder we can actually write a file to
-function trWritableDir() {
-    var cands = [Folder.temp];
-    try { cands.push(Folder("" + Folder.userData.fsName + "/theo-reverse")); } catch (e0) {}
-    try { cands.push(Folder.desktop); } catch (e1) {}
-    try { if (app.project.file) cands.push(app.project.file.parent); } catch (e2) {}
-    for (var i = 0; i < cands.length; i++) {
-        var d = cands[i]; if (!d) continue;
-        try { if (!d.exists) d.create(); } catch (eC) {}
-        try {
-            var probe = new File(d.fsName + "/tr_probe_" + (new Date().getTime()) + ".txt");
-            if (probe.open("w")) { probe.write("x"); probe.close(); var okp = (new File(probe.fsName)).exists; try { probe.remove(); } catch (eR) {} if (okp) return d; }
-        } catch (eD) {}
-    }
-    return Folder.temp;
-}
-
-// Export the current comp frame to a PNG (seed for Gemini). Returns "OK:path=..;w=..;h=..;t=.."
-function theoReverse_saveSeedFrame(cfg) {
+// Organize — sort every project item into Comps / Footage / Solids / Audio folders
+function theoReverse_organize() {
     try {
-        var comp = activeCompOrErr();
-        if (!comp) return "ERR:Open a comp first.";
-        if (typeof comp.saveFrameToPng !== "function") return "ERR:This AE version can't export a frame via script.";
-        var c = parseConfig(cfg || "");
-        var out = c.path;
-        if (!out) out = trWritableDir().fsName + "/theo_roto_seed_" + (new Date().getTime()) + ".png";
-        var t = c.time ? parseFloat(c.time) : comp.time;
-        var f = new File(out);
-        try { f.parent.create(); } catch (eMk) {}
-        var threw = "";
-        try { comp.saveFrameToPng(t, f); } catch (eS) { threw = " (" + eS.toString() + ")"; }
-        // wait in case the render is deferred (up to ~2s)
-        var tries = 0;
-        while (!(new File(f.fsName)).exists && tries < 20) { $.sleep(100); tries++; }
-        if (!(new File(f.fsName)).exists) return "ERR:frame didn't save" + threw + " -> " + f.fsName;
-        return "OK:path=" + f.fsName + ";w=" + comp.width + ";h=" + comp.height + ";t=" + t;
-    } catch (e) { return "ERR:" + e.toString(); }
-}
-
-// Edge choke on the matted layer (the "adjust" dial). +tighten / -expand.
-function theoReverse_refineMatte(cfg) {
-    try {
-        var comp = activeCompOrErr();
-        if (!comp) return "ERR:Open a comp first.";
-        var c = parseConfig(cfg || "");
-        var sel = comp.selectedLayers;
-        var fill = c.fillIndex ? comp.layer(parseInt(c.fillIndex, 10)) : (sel.length ? sel[0] : null);
-        if (!fill) return "ERR:Select the isolated layer first.";
-        var choke = parseFloat(c.choke); if (isNaN(choke)) choke = 0;
-        app.beginUndoGroup("TR Refine Matte");
-        var fx = fill.property("ADBE Effect Parade"), sc = null, i;
-        for (i = 1; i <= fx.numProperties; i++) { if (fx.property(i).matchName === "ADBE Simple Choker") { sc = fx.property(i); break; } }
-        if (!sc) sc = fx.addProperty("ADBE Simple Choker");
-        var set = false;
-        try { sc.property("ADBE Simple Choker-0002").setValue(choke); set = true; } catch (e1) {}
-        if (!set) { try { sc.property(2).setValue(choke); } catch (e2) {} }
-        app.endUndoGroup();
-        return "OK:Edge choke " + choke + ".";
-    } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
-}
-
-// Add a SUBTRACT rectangle mask the user drags over background bits to cut them out
-function theoReverse_addGarbageMask(cfg) {
-    try {
-        var comp = activeCompOrErr();
-        if (!comp) return "ERR:Open a comp first.";
-        var c = parseConfig(cfg || "");
-        var sel = comp.selectedLayers;
-        var fill = c.fillIndex ? comp.layer(parseInt(c.fillIndex, 10)) : (sel.length ? sel[0] : null);
-        if (!fill) return "ERR:Select the isolated layer first.";
-        var LW = comp.width, LH = comp.height;
-        try { if (fill.source) { LW = fill.source.width; LH = fill.source.height; } } catch (eSz) {}
-        app.beginUndoGroup("TR Garbage Mask");
-        var mask = fill.property("ADBE Mask Parade").addProperty("ADBE Mask Atom");
-        mask.name = "Garbage";
-        mask.maskMode = MaskMode.SUBTRACT;
-        var rx = LW * 0.08, ry = LH * 0.08, rw = LW * 0.28, rh = LH * 0.28;
-        if (c.rect) { var r = c.rect.split(","); rx = parseFloat(r[0]); ry = parseFloat(r[1]); rw = parseFloat(r[2]); rh = parseFloat(r[3]); }
-        var sh = new Shape();
-        sh.vertices = [[rx, ry], [rx + rw, ry], [rx + rw, ry + rh], [rx, ry + rh]];
-        sh.closed = true;
-        mask.property("ADBE Mask Shape").setValue(sh);
-        var feather = parseFloat(c.feather); if (!isNaN(feather) && feather > 0) { try { mask.property("ADBE Mask Feather").setValue([feather, feather]); } catch (eF) {} }
-        app.endUndoGroup();
-        return "OK:Added a garbage mask — drag it over the bit to cut.";
-    } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
-}
-
-// "Proceed" — precompose the fill + its matte into one isolated comp; optional BG solid under it
-function theoReverse_commitRoto(cfg) {
-    try {
-        var comp = activeCompOrErr();
-        if (!comp) return "ERR:Open a comp first.";
-        var c = parseConfig(cfg || "");
-        var sel = comp.selectedLayers;
-        var fill = c.fillIndex ? comp.layer(parseInt(c.fillIndex, 10)) : (sel.length ? sel[0] : null);
-        if (!fill) return "ERR:Select the isolated layer first.";
-        app.beginUndoGroup("TR Commit Roto");
-        var idxs = [fill.index];
-        try { if (fill.index > 1) idxs.push(fill.index - 1); } catch (eAb) {}
-        idxs.sort(function (a, b) { return a - b; });
-        var inP = fill.inPoint, outP = fill.outPoint, pc = null;
-        if (c.precomp !== "0") {
-            pc = comp.layers.precompose(idxs, String(fill.name).replace(/[;=]/g, " ") + " (isolated)", true);
-            var np = comp.layer(idxs[0]), q;
-            if (!np || np.source !== pc) { for (q = 1; q <= comp.numLayers; q++) { if (comp.layer(q).source === pc) { np = comp.layer(q); break; } } }
-            if (np) { try { np.inPoint = inP; np.outPoint = outP; } catch (eT) {} }
+        function getFolder(name, cache) {
+            if (cache.f) return cache.f;
+            var i;
+            for (i = 1; i <= app.project.numItems; i++) { var it = app.project.item(i); if (it instanceof FolderItem && it.name === name) { cache.f = it; return it; } }
+            cache.f = app.project.items.addFolder(name); return cache.f;
         }
-        if (c.bg && c.bg !== "0") {
-            var col = [0, 0, 0];
-            try { var hx = c.bg.replace("#", ""); col = [parseInt(hx.substring(0, 2), 16) / 255, parseInt(hx.substring(2, 4), 16) / 255, parseInt(hx.substring(4, 6), 16) / 255]; } catch (eC) {}
-            var bg = comp.layers.addSolid(col, "BG", comp.width, comp.height, comp.pixelAspect, comp.duration);
-            bg.moveToEnd();
+        var cC = {}, cF = {}, cS = {}, cA = {};
+        app.beginUndoGroup("TR Organize");
+        var items = [], i;
+        for (i = 1; i <= app.project.numItems; i++) items.push(app.project.item(i));
+        var moved = 0;
+        for (i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (it instanceof FolderItem) continue;
+            try {
+                if (it instanceof CompItem) { it.parentFolder = getFolder("Comps", cC); moved++; }
+                else if (it instanceof FootageItem) {
+                    var isSolid = false; try { isSolid = it.mainSource && (it.mainSource instanceof SolidSource); } catch (eS) {}
+                    var audioOnly = false; try { audioOnly = it.hasAudio && !it.hasVideo; } catch (eA) {}
+                    if (isSolid) { it.parentFolder = getFolder("Solids", cS); moved++; }
+                    else if (audioOnly) { it.parentFolder = getFolder("Audio", cA); moved++; }
+                    else { it.parentFolder = getFolder("Footage", cF); moved++; }
+                }
+            } catch (eM) {}
         }
         app.endUndoGroup();
-        return "OK:Locked the cutout in" + (pc ? " (precomped)" : "") + ".";
+        return "OK:Sorted " + moved + " items into folders.";
     } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
 }
 
-// Flip the current track matte (subject <-> background) without adding a layer
-function theoReverse_invertMatte(cfg) {
+// Flash — a quick white flash transition at the playhead
+function theoReverse_flash(cfg) {
     try {
         var comp = activeCompOrErr();
         if (!comp) return "ERR:Open a comp first.";
         var c = parseConfig(cfg || "");
-        var sel = comp.selectedLayers;
-        var fill = c.fillIndex ? comp.layer(parseInt(c.fillIndex, 10)) : (sel.length ? sel[0] : null);
-        if (!fill) return "ERR:Select the isolated layer first.";
-        app.beginUndoGroup("TR Invert Matte");
-        var t = fill.trackMatteType, nt = t;
-        if (t === TrackMatteType.ALPHA) nt = TrackMatteType.ALPHA_INVERTED;
-        else if (t === TrackMatteType.ALPHA_INVERTED) nt = TrackMatteType.ALPHA;
-        else if (t === TrackMatteType.LUMA) nt = TrackMatteType.LUMA_INVERTED;
-        else if (t === TrackMatteType.LUMA_INVERTED) nt = TrackMatteType.LUMA;
-        fill.trackMatteType = nt;
+        var dur = parseFloat(c.dur); if (isNaN(dur) || dur <= 0) dur = 0.16;
+        app.beginUndoGroup("TR Flash");
+        var t = comp.time, half = dur / 2;
+        var s = comp.layers.addSolid([1, 1, 1], "Flash", comp.width, comp.height, comp.pixelAspect, dur);
+        s.startTime = t - half;
+        var op = s.property("ADBE Transform Group").property("ADBE Opacity");
+        op.setValueAtTime(t - half, 0);
+        op.setValueAtTime(t, 100);
+        op.setValueAtTime(t + half, 0);
+        trEase(op);
+        s.moveToBeginning();
         app.endUndoGroup();
-        return "OK:Flipped the matte.";
+        return "OK:White flash at the playhead.";
     } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
 }
 

@@ -79,9 +79,17 @@
     fitComp:      svg('<path d="M9 4H5.2A1.2 1.2 0 0 0 4 5.2V9M15 4h3.8A1.2 1.2 0 0 1 20 5.2V9M20 15v3.8a1.2 1.2 0 0 1-1.2 1.2H15M4 15v3.8A1.2 1.2 0 0 0 5.2 20H9"/>'),
     centerAnchor: svg('<circle cx="12" cy="12" r="7.3"/><path d="M12 1.8v3.4M12 18.8v3.4M1.8 12h3.4M18.8 12h3.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>'),
     adjust:       svg('<path d="M4 7h8M16 7h4M4 12h3M11 12h9M4 17h5M13 17h7"/><circle cx="14" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="11" cy="17" r="2"/>'),
-    solidBG:      svg('<rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor" fill-opacity="0.16"/>')
+    solidBG:      svg('<rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor" fill-opacity="0.16"/>'),
+    speedRamp:    svg('<path d="M3 19c7 0 9-13 18-13"/><path d="M16 6h5v5"/>'),
+    beatZoom:     svg('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M10.5 7.7v5.6M7.7 10.5h5.6"/><path d="M20.5 20.5 15.6 15.6"/>'),
+    flash:        svg('<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>'),
+    organize:     svg('<path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5H8l2 2h8.5A1.5 1.5 0 0 1 20 9.5v8A1.5 1.5 0 0 1 18.5 19h-14A1.5 1.5 0 0 1 3 17.5Z"/>')
   };
   const TOOLS = [
+    { key: "speedRamp",    lab: "Speed Ramp" },
+    { key: "beatZoom",     lab: "Beat Zoom" },
+    { key: "flash",        lab: "Flash" },
+    { key: "organize",     lab: "Organize" },
     { key: "saveFrame",    lab: "Save Frame" },
     { key: "precompEach",  lab: "Precomp Each" },
     { key: "splitLayer",   lab: "Split Layer" },
@@ -108,11 +116,15 @@
       b.classList.remove("flash");
       void b.offsetWidth;
       b.classList.add("flash");
-      const call = t.key === "precompEach"
-        ? "theoReverse_precompEach()"
-        : t.key === "saveFrame"
-        ? "theoReverse_saveFrame()"
-        : "theoReverse_tool(" + JSON.stringify(t.key) + ")";
+      const SPECIAL = {
+        precompEach: "theoReverse_precompEach()",
+        saveFrame:   "theoReverse_saveFrame()",
+        speedRamp:   'theoReverse_speedRamp("")',
+        beatZoom:    'theoReverse_beatZoom("")',
+        organize:    "theoReverse_organize()",
+        flash:       'theoReverse_flash("")'
+      };
+      const call = SPECIAL[t.key] || ("theoReverse_tool(" + JSON.stringify(t.key) + ")");
       TR.evalJSX(call).then((res) => {
         if (res && res.indexOf("OK") === 0) TR.toast(res.replace(/^OK:?/, "✓ "), "ok");
         else TR.toast(res || "No response from After Effects.", "err");
