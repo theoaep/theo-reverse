@@ -570,6 +570,23 @@ function theoReverse_applyAlphaMatte(cfg) {
     } catch (e) { try { app.endUndoGroup(); } catch (e2) {} return "ERR:" + e.toString(); }
 }
 
+// pick the first folder we can actually write a file to
+function trWritableDir() {
+    var cands = [Folder.temp];
+    try { cands.push(Folder("" + Folder.userData.fsName + "/theo-reverse")); } catch (e0) {}
+    try { cands.push(Folder.desktop); } catch (e1) {}
+    try { if (app.project.file) cands.push(app.project.file.parent); } catch (e2) {}
+    for (var i = 0; i < cands.length; i++) {
+        var d = cands[i]; if (!d) continue;
+        try { if (!d.exists) d.create(); } catch (eC) {}
+        try {
+            var probe = new File(d.fsName + "/tr_probe_" + (new Date().getTime()) + ".txt");
+            if (probe.open("w")) { probe.write("x"); probe.close(); var okp = (new File(probe.fsName)).exists; try { probe.remove(); } catch (eR) {} if (okp) return d; }
+        } catch (eD) {}
+    }
+    return Folder.temp;
+}
+
 // Export the current comp frame to a PNG (seed for Gemini). Returns "OK:path=..;w=..;h=..;t=.."
 function theoReverse_saveSeedFrame(cfg) {
     try {
@@ -578,12 +595,16 @@ function theoReverse_saveSeedFrame(cfg) {
         if (typeof comp.saveFrameToPng !== "function") return "ERR:This AE version can't export a frame via script.";
         var c = parseConfig(cfg || "");
         var out = c.path;
-        if (!out) out = Folder.temp.fsName + "/theo_roto_seed_" + (new Date().getTime()) + ".png";
+        if (!out) out = trWritableDir().fsName + "/theo_roto_seed_" + (new Date().getTime()) + ".png";
         var t = c.time ? parseFloat(c.time) : comp.time;
         var f = new File(out);
         try { f.parent.create(); } catch (eMk) {}
-        comp.saveFrameToPng(t, f);
-        if (!f.exists) return "ERR:frame didn't save to " + f.fsName;
+        var threw = "";
+        try { comp.saveFrameToPng(t, f); } catch (eS) { threw = " (" + eS.toString() + ")"; }
+        // wait in case the render is deferred (up to ~2s)
+        var tries = 0;
+        while (!(new File(f.fsName)).exists && tries < 20) { $.sleep(100); tries++; }
+        if (!(new File(f.fsName)).exists) return "ERR:frame didn't save" + threw + " -> " + f.fsName;
         return "OK:path=" + f.fsName + ";w=" + comp.width + ";h=" + comp.height + ";t=" + t;
     } catch (e) { return "ERR:" + e.toString(); }
 }
