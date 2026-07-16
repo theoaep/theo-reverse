@@ -19,6 +19,17 @@
     return o;
   }
   function nodeFs() { try { return require("fs"); } catch (e) { return null; } }
+  function readSeedB64(p) {
+    const fs = nodeFs();
+    let path = p;
+    try {
+      if (!fs.existsSync(path)) {
+        const bs = path.replace(/\//g, "\\"), fw = path.replace(/\\/g, "/");
+        if (fs.existsSync(bs)) path = bs; else if (fs.existsSync(fw)) path = fw;
+      }
+    } catch (e) {}
+    return fs.readFileSync(path).toString("base64");
+  }
   function status(msg, cls) { const el = $("rotoStatus"); if (el) { el.textContent = msg || ""; el.className = "roto-status" + (cls ? " " + cls : ""); } }
   function fail(res) { setBusy(false); const m = String(res || "").replace(/^ERR:/, ""); status(m || "something broke", "err"); TR.toast(m || "roto failed", "err"); }
   function setBusy(on, label) {
@@ -67,10 +78,13 @@
   }
   function writeTempPng(dataUrl) {
     const fs = nodeFs(); if (!fs) throw new Error("no file access");
-    const os = require("os");
+    let os = null; try { os = require("os"); } catch (e) {}
+    const B = (typeof Buffer !== "undefined") ? Buffer : (window.cep_node && window.cep_node.Buffer);
+    if (!B) throw new Error("no Buffer");
     const b64 = dataUrl.replace(/^data:image\/png;base64,/, "");
-    const out = (os.tmpdir ? os.tmpdir() : ".") + "/theo_roto_matte_" + Date.now() + ".png";
-    fs.writeFileSync(out, Buffer.from(b64, "base64"));
+    const dir = (os && os.tmpdir) ? os.tmpdir() : ".";
+    const out = dir + "/theo_roto_matte_" + Date.now() + ".png";
+    fs.writeFileSync(out, B.from(b64, "base64"));
     return out;
   }
 
@@ -82,7 +96,8 @@
     if (!ok(seedRes)) return fail(seedRes);
     const seed = parseKV(seedRes);
     let b64;
-    try { b64 = nodeFs().readFileSync(seed.path).toString("base64"); } catch (e) { return fail("ERR:couldn't read the frame file."); }
+    try { b64 = readSeedB64(seed.path); }
+    catch (e) { return fail("ERR:couldn't read the frame — " + ((e && e.message) || "?") + "  [" + seed.path + "]"); }
 
     setBusy(true, "AI is finding the player…");
     let segs;

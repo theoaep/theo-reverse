@@ -580,8 +580,11 @@ function theoReverse_saveSeedFrame(cfg) {
         var out = c.path;
         if (!out) out = Folder.temp.fsName + "/theo_roto_seed_" + (new Date().getTime()) + ".png";
         var t = c.time ? parseFloat(c.time) : comp.time;
-        comp.saveFrameToPng(t, new File(out));
-        return "OK:path=" + out + ";w=" + comp.width + ";h=" + comp.height + ";t=" + t;
+        var f = new File(out);
+        try { f.parent.create(); } catch (eMk) {}
+        comp.saveFrameToPng(t, f);
+        if (!f.exists) return "ERR:frame didn't save to " + f.fsName;
+        return "OK:path=" + f.fsName + ";w=" + comp.width + ";h=" + comp.height + ";t=" + t;
     } catch (e) { return "ERR:" + e.toString(); }
 }
 
